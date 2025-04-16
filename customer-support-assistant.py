@@ -1,10 +1,11 @@
 import os
+import re
 from groq import Groq
 from dotenv import load_dotenv
 
 
 class GroqChatClient:
-    def __init__(self, model_id='llama-3.3-70b-versatile', system_message=None, api_key=None):
+    def __init__(self, model_id='deepseek-r1-distill-llama-70b', system_message=None, api_key=None):
         if api_key:
             self.client = Groq(api_key=api_key)
         else:
@@ -83,7 +84,10 @@ if __name__ == '__main__':
         message= ''
         for chunk in response:
             content_chunk = chunk.choices[0].delta.content
-            print(content_chunk, end="")
-            message += str(content_chunk)
+            if isinstance(content_chunk, str):
+                content_chunk = re.sub('<.*?>', '', content_chunk) #Remove HTML tags
+                print(content_chunk, end="")
+                message += content_chunk
+
 
         client.messages.append(client.draft_message(message, 'assistant'))
