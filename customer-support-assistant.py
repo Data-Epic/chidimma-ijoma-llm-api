@@ -20,7 +20,7 @@ class GroqChatClient:
     def draft_message(self, prompt, role='user'):
         return {'role':role, 'content':prompt}
 
-    def send_request(self, message, temperature=0.5, max_tokens=1024, stream=False, stop=None):
+    def send_request(self, message, temperature=0.5, max_tokens=1024, stream=False, stop=None, reasoning_format='hidden'):
         self.messages.append(message)
         chat_completion = self.client.chat.completions.create(
             messages=self.messages,
@@ -28,7 +28,8 @@ class GroqChatClient:
             temperature=temperature,
             max_tokens=max_tokens,
             stream=stream,
-            stop=stop
+            stop=stop,
+            reasoning_format=reasoning_format
         )
 
         if not stream:
@@ -64,7 +65,11 @@ if __name__ == '__main__':
     checking details for accuracy, and providing fallback options if a solution is not available.
 
     If you do not understand the request or if the information is unclear, politely ask the customer for clarification. 
-    You do not provide personal opinions or engage in off-topic discussions.""".strip().replace('\n', ' ')
+    You do not provide personal opinions or engage in off-topic discussions.
+    
+    Your responses should always be as precise and consice as possible without reiterating the user's question.
+    Your responses should be in the form of a conversation and should not include any disclaimers or warnings in your responses.
+    You should always ask the customer if they need any further assistance at the end of your response.""".strip().replace('\n', ' ')
     
 
     load_dotenv()
