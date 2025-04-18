@@ -5,22 +5,62 @@ from dotenv import load_dotenv
 
 
 class GroqChatClient:
+    '''
+    A class to interact with the Groq API for chat completions.
+    This class is designed to facilitate the creation of a chat assistant that can handle customer support interactions.
+    '''
     def __init__(self, model_id='deepseek-r1-distill-llama-70b', system_message=None, api_key=None):
+        '''
+        Initializes the GroqChatClient with the specified model ID, system message, and API key.
+
+        Args:
+            model_id: The ID of the model to use for chat completions (default is 'deepseek-r1-distill-llama-70b').
+            system_message: An optional system message to set the context for the conversation.
+            api_key: The API key for authentication with the Groq API.
+
+        Raises:
+            ValueError: If the model ID is not provided.
+        '''
         if api_key:
             self.client = Groq(api_key=api_key)
         else:
             self.client = Groq()
         
         self.model_id = model_id
-        self.messages = []
+        self.messages = [] # list to store the messages in the conversation
         
         if system_message:
-            self.messages.append({'role': 'system', 'content': system_message})
+            self.messages.append({'role': 'system','content': system_message})
 
     def draft_message(self, prompt, role='user'):
+        '''
+        Creates a message dictionary with the specified prompt and role.
+
+        Args:
+            prompt: The content of the message.
+            role: The role of the message sender (default is 'user').
+
+        Returns:
+            A dictionary containing the role and content of the message.
+        '''
         return {'role':role, 'content':prompt}
 
     def send_request(self, message, temperature=0.5, max_tokens=1024, stream=False, stop=None, reasoning_format='hidden'):
+        '''
+        Sends a request to the Groq API for chat completions.
+        It appends the message to the messages list and sends the request to the API.
+        
+        Args:
+            message: The message to be sent to the API.
+            temperature: The temperature for the model (default is 0.5).
+            max_tokens: The maximum number of tokens to generate (default is 1024).
+            stream: Whether to stream the response (default is False).
+            stop: Optional stopping criteria for the model.
+            reasoning_format: The reasoning format for the model (default is 'hidden').
+
+        Returns:
+            A dictionary containing the response from the API if stream is False, otherwise a streaming response object.
+        '''
         self.messages.append(message)
         chat_completion = self.client.chat.completions.create(
             messages=self.messages,
@@ -50,11 +90,14 @@ class GroqChatClient:
     
     @property
     def last_message(self):
+        '''
+        Returns the last message in the conversation.
+        If there are no messages, it returns None. '''
         return self.messages[-1] if self.messages else None
     
 if __name__ == '__main__':
     system_message = """
-    You are a professional customer support assistant for a reputable company. 
+    You are a professional customer support assistant on the Adidas Online Store named Colin. 
     You are helpful, courteous, and informative in all your interactions. 
     You handle a wide range of customer interactions including inquiries, complaints, feedback, and technical support.
 
@@ -72,15 +115,26 @@ if __name__ == '__main__':
     You should always ask the customer if they need any further assistance at the end of your response.""".strip().replace('\n', ' ')
     
 
-    load_dotenv()
+    # Load environment variables from .env file
+    load_dotenv() 
+
+    # Get the API key from environment variables
     api_key = os.getenv("GROQ_API_KEY")
 
+
+    # Instantiate the GroqChatClient with the system message and API key
     client = GroqChatClient (system_message=system_message, api_key=api_key)
 
     stream_response = True
     
+    # Start a loop to interact with the user
+    # The loop continues until the user types 'exit', 'leave', or 'stop'
     while True:
-        user_input = input("Enter your message (or type 'exit', 'leave', 'stop' to end): ")
+        user_input = input(
+            "\n\nHi there! I'm Colin.\n"
+            "My job to to help you with any difficulties while you navigate the Adidas Online Store \n"
+            "Ask me any question or type 'exit', 'leave', 'stop' to end: \n\n"
+            )
         if user_input.lower() in ('exit', 'leave', 'stop'):
             break
         
