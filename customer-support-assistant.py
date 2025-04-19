@@ -2,6 +2,7 @@ import os
 import re
 from groq import Groq
 from dotenv import load_dotenv
+import logging
 
 
 class GroqChatClient:
@@ -120,6 +121,10 @@ if __name__ == '__main__':
 
     # Get the API key from environment variables
     api_key = os.getenv("GROQ_API_KEY")
+    
+    # Set up logging configuration
+    logging.basicConfig(filename='history.log', level=logging.INFO,
+                        format='%(asctime)s: %(levelname)s: %(message)s')
 
 
     # Instantiate the GroqChatClient with the system message and API key
@@ -127,19 +132,21 @@ if __name__ == '__main__':
 
     stream_response = True
     
+    print("\n\nHi there! I'm Colin.\n"+
+          "Welcome to the Adidas Online Store Customer Support Assistant!\n"+
+          "You can ask me any questions related to your orders, products, or any other inquiries.\n") 
     # Start a loop to interact with the user
     # The loop continues until the user types 'exit', 'leave', or 'stop'
     while True:
         user_input = input(
-            "\n\nHi there! I'm Colin.\n"
-            "My job to to help you with any difficulties while you navigate the Adidas Online Store \n"
-            "Ask me any question or type 'exit', 'leave', 'stop' to end: \n\n"
+            "\nAsk me any question or type 'exit', 'leave', 'stop' to end: \n\n User: "
             )
         if user_input.lower() in ('exit', 'leave', 'stop'):
             break
         
         response = client.send_request(client.draft_message(user_input), stream=stream_response)
-        
+        logging.info(f"User: {user_input}")
+      
         message= ''
         for chunk in response:
             content_chunk = chunk.choices[0].delta.content
@@ -150,3 +157,4 @@ if __name__ == '__main__':
 
 
         client.messages.append(client.draft_message(message, 'assistant'))
+        logging.info(f"Assistant: {message}")
